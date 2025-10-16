@@ -15,9 +15,9 @@
     function updateCount() {
       var config = {
         app_name: "echo",
-        formName: "Order_Offer",
-        //criteria: "(Status.Status_Code = \"OO-0.0-ENTRY\")"
-        criteria: "{Status = 3840827000051619561}" // Updated criteria format
+        report_name: "Order_Offer",
+        criteria: "(Status.Status_Code = \"OO-0.0-ENTRY\")"
+        //criteria: "{Status = 3840827000051619561}" // Updated criteria format
       };
 
       ZOHO.CREATOR.DATA.getRecordCount(config)
