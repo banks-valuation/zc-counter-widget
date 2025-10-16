@@ -14,7 +14,7 @@
       var config = {
         app_name: "echo",
         formName: "Order_Offer",
-        criteria: "(Status.Status_Code == \"OO-0.0-ENTRY\")"
+        criteria: "(Status.Status_Code = \"OO-0.0-ENTRY\")"
       };
 
       ZOHO.CREATOR.DATA.getRecordCount(config)
