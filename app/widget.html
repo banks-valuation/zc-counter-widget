@@ -8,7 +8,7 @@
 </head>
 <body>
   <h3>Widget Version: <span id="widgetVersion"></span></h3>
-  
+
   <h2>Orders in Entry Status: <span id="orderCount">0</span></h2>
 
   <script>
@@ -16,7 +16,8 @@
       var config = {
         app_name: "echo",
         formName: "Order_Offer",
-        criteria: "(Status.Status_Code = \"OO-0.0-ENTRY\")"
+        //criteria: "(Status.Status_Code = \"OO-0.0-ENTRY\")"
+        criteria: "{Status = 3840827000051619561}" // Updated criteria format
       };
 
       ZOHO.CREATOR.DATA.getRecordCount(config)
