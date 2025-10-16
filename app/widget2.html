@@ -11,7 +11,7 @@
   <h2>Count: <span id="recordCount">0</span></h2>
 
   <script>
-    ZOHO.CREATOR.init().then(function() {
+    
       ZOHO.CREATOR.UTIL.getQueryParams().then(function(params) {
         const reportName = params.report_name;
         const criteria = params.criteria;
@@ -42,7 +42,7 @@
         // Refresh every 5 seconds
         setInterval(updateCount, 5000);
       });
-    });
+    
   </script>
 </body>
 </html>
