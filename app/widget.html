@@ -12,12 +12,14 @@
   <script>
     function updateCount() {
       var config = {
+        app_name: "echo",
         formName: "Order_Offer",
         criteria: "(Status.Status_Code == \"OO-0.0-ENTRY\")"
       };
 
       ZOHO.CREATOR.DATA.getRecordCount(config)
         .then(function(response) {
+          console.log(response);
           const count = response.result.records_count;
           $("#orderCount").text(count);
         })
