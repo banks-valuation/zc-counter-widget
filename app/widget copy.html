@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Order Entry Counter</title>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <h3>Widget Version: <span id="widgetVersion"></span></h3>
+
+  <h2>Orders in Entry Status: <span id="orderCount">0</span></h2>
+
+  <script>
+    function updateCount() {
+      var config = {
+        app_name: "echo",
+        formName: "Order_Offer",
+        //criteria: "(Status.Status_Code = \"OO-0.0-ENTRY\")"
+        criteria: "{Status = 3840827000051619561}" // Updated criteria format
+      };
+
+      ZOHO.CREATOR.DATA.getRecordCount(config)
+        .then(function(response) {
+          console.log(response);
+          const count = response.result.records_count;
+          $("#orderCount").text(count);
+        })
+        .catch(function(err) {
+          console.error("Error fetching record count:", err);
+        });
+    }
+
+    // Initial fetch
+    updateCount();
+
+    document.getElementById("widgetVersion").textContent = new Date(document.lastModified).toLocaleString();
+
+
+    // Refresh every 5 seconds
+    setInterval(updateCount, 5000);
+  </script>
+</body>
+</html>
