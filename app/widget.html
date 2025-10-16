@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Zoho Creator Widget v2 Demo</title>
+
+    <!-- Zoho Creator Widget SDK v2 -->
+    <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+
+    <!-- Optional: jQuery for convenience -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script type="text/javascript">
+      // Wait until the SDK is fully loaded
+      window.addEventListener("load", function () {
+        console.log("Zoho Creator Widget SDK v2 loaded");
+
+        // ✅ Define your API call config
+        var config = {
+          report_name: "All_Contacts", // name of your report
+          id: "3840827000033664398"    // example record ID
+        };
+
+        // ✅ Directly call the v2 API (no init() needed)
+        ZOHO.CREATOR.DATA.getRecordById(config)
+          .then(function (response) {
+            console.log("Response from getRecordById:", response);
+
+            if (response && response.data && response.data.Name) {
+              $("#title").text("Welcome " + response.data.Name);
+            } else {
+              $("#title").text("Record not found or invalid structure");
+            }
+          })
+          .catch(function (err) {
+            console.error("Error fetching record:", err);
+            $("#title").text("Error fetching record — check console");
+          });
+      });
+    </script>
+  </head>
+
+  <body>
+    <h2 id="title">Loading record...</h2>
+  </body>
+</html>
