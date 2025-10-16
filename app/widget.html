@@ -27,7 +27,7 @@
             console.log("Response from getRecordById:", response);
 
             if (response && response.data && response.data.Name) {
-              $("#title").text("Welcome " + response.data.Name.zc_display_value);
+              $("#title").text("Welcome " + response.data.Name.first_name);
             } else {
               $("#title").text("Record not found or invalid structure");
             }
