@@ -17,7 +17,6 @@
 </head>
 <body>
   <h3>Widget Version: <span id="widgetVersion"></span></h3>
-
   <div id="countsContainer"></div>
 
   <script>
@@ -39,11 +38,23 @@
         </div>
       `);
     });
-
     document.getElementById("widgetVersion").textContent =
       new Date(document.lastModified).toLocaleString();
 
-    // --- Safe SDK initialization ---
+    // --- Wait for API readiness ---
+    async function waitForAPI(timeout = 7000, interval = 200) {
+      const start = Date.now();
+      while (!ZOHO?.CREATOR?.API?.getRecordCount) {
+        if (Date.now() - start > timeout) {
+          console.error("Timed out waiting for ZOHO.CREATOR.API.getRecordCount");
+          return false;
+        }
+        await new Promise(r => setTimeout(r, interval));
+      }
+      return true;
+    }
+
+    // --- Safe SDK init ---
     async function safeInit(retries = 5, delay = 3000) {
       for (let i = 0; i < retries; i++) {
         try {
@@ -59,21 +70,23 @@
       return false;
     }
 
-    // --- Safe getRecordCount wrapper ---
+    // --- Safe getRecordCount with retries ---
     async function safeGetRecordCount(cfg, retries = 3, delay = 2000) {
       for (let i = 0; i < retries; i++) {
         try {
           if (!ZOHO?.CREATOR?.API?.getRecordCount) {
             console.warn("API not ready, waiting...");
-            await safeInit();
+            const ready = await waitForAPI(7000);
+            if (!ready) throw new Error("ZOHO API never became ready");
           }
+
           const response = await ZOHO.CREATOR.API.getRecordCount({
             appName: "echo",
             reportName: cfg.report,
             criteria: cfg.criteria
           });
-          const count = response.count ?? response.result?.records_count ?? 0;
-          return count;
+          return response.count ?? response.result?.records_count ?? 0;
+
         } catch (err) {
           console.warn(`Attempt ${i+1} for ${cfg.label} failed:`, err);
           if (String(err).includes("Invalid Ticket Id") || String(err).includes("SESSION")) {
@@ -99,8 +112,11 @@
       const initOk = await safeInit();
       if (!initOk) return;
 
+      const apiReady = await waitForAPI();
+      if (!apiReady) return;
+
       await updateAllCounts();
-      setInterval(updateAllCounts, 5000);
+      setInterval(updateAllCounts, 5000); // update every 5s
     })();
   </script>
 </body>
