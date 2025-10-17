@@ -20,15 +20,15 @@
   <div id="countsContainer"></div>
 
   <script>
-    const nowISO = new Date().toISOString().slice(0, 19).replace("T", " "); 
+    const currentTime = new Date().toISOString().slice(0, 19).replace("T", " "); 
 
     const widgetConfig = [
-      { id: "draft", label: "Draft", report: "Order_Offers", criteria: '(Status.Status_Code=="OO-0.0-ENTRY")' },
-      { id: "draft_late", label: "Draft Late", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-0.0-ENTRY" && Response_Required_By_Date < "${nowISO}")`  },
-      { id: "new", label: "New", report: "Order_Offers", criteria: '(Status.Status_Code=="OO-1.0-NEW")' },
-      { id: "offered", label: "Offered", report: "Order_Offers", criteria: '(Status.Status_Code=="OO-1.5-OFFEREDTOAPPRAISER")' },
-      { id: "accepted", label: "Accepted", report: "Order_Offers", criteria: '(Status.Status_Code=="OO-2.0-ACCEPTED")' },
-      { id: "declined", label: "Declined", report: "Order_Offers", criteria: '(Status.Status_Code=="OO-2.5-REJECTED")' }
+      { id: "draft", label: "Draft", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-0.0-ENTRY")` },
+      { id: "draft_late", label: "Draft Late", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-0.0-ENTRY" && Response_Required_By_Date < "${currentTime}")`},
+      { id: "new", label: "New", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-1.0-NEW")` },
+      { id: "offered", label: "Offered", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-1.5-OFFEREDTOAPPRAISER")` },
+      { id: "accepted", label: "Accepted", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-2.0-ACCEPTED")` },
+      { id: "declined", label: "Declined", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-2.5-REJECTED")` }
     ];
 
     // --- DOM setup ---
