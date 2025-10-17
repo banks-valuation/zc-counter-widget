@@ -23,11 +23,11 @@
 
   <script>
     const widgetConfig = [
-      { id: "draft", label: "Draft", report: "Orders_Report", criteria: '(Status="Draft")' },
-      { id: "new", label: "New", report: "Orders_Report", criteria: '(Status="New")' },
-      { id: "offered", label: "Offered", report: "Orders_Report", criteria: '(Status="Offered")' },
-      { id: "accepted", label: "Accepted", report: "Orders_Report", criteria: '(Status="Accepted")' },
-      { id: "declined", label: "Declined", report: "Orders_Report", criteria: '(Status="Declined")' }
+      { id: "draft", label: "Draft", report: "Orders_Report", criteria: '(Status.Status_Code="OO-0.0-ENTRY")' },
+      { id: "new", label: "New", report: "Orders_Report", criteria: '(Status.Status_Code="OO-1.0-NEW")' },
+      { id: "offered", label: "Offered", report: "Orders_Report", criteria: '(Status.Status_Code="OO-1.5-OFFEREDTOAPPRAISER")' },
+      { id: "accepted", label: "Accepted", report: "Orders_Report", criteria: '(Status.Status_Code="OO-2.0-ACCEPTED")' },
+      { id: "declined", label: "Declined", report: "Orders_Report", criteria: '(Status.Status_Code="OO-2.5-REJECTED")' }
     ];
 
     // --- DOM setup ---
@@ -46,7 +46,9 @@
     // --- safe init helper ---
     async function safeInit() {
       try {
-        await ZOHO.CREATOR.init();
+        await ZOHO.CREATOR.UTIL.getInitParams().then(function(response){
+        //callback block
+        });
         return true;
       } catch (err) {
         console.warn("Init failed, retrying in 3 s…", err);
