@@ -44,9 +44,9 @@
     // --- Wait for API readiness ---
     async function waitForAPI(timeout = 7000, interval = 200) {
       const start = Date.now();
-      while (!ZOHO?.CREATOR?.API?.getRecordCount) {
+      while (!ZOHO?.CREATOR?.DATA?.getRecordCount) {
         if (Date.now() - start > timeout) {
-          console.error("Timed out waiting for ZOHO.CREATOR.API.getRecordCount");
+          console.error("Timed out waiting for ZOHO.CREATOR.DATA.getRecordCount");
           return false;
         }
         await new Promise(r => setTimeout(r, interval));
@@ -74,15 +74,15 @@
     async function safeGetRecordCount(cfg, retries = 3, delay = 2000) {
       for (let i = 0; i < retries; i++) {
         try {
-          if (!ZOHO?.CREATOR?.API?.getRecordCount) {
+          if (!ZOHO?.CREATOR?.DATA?.getRecordCount) {
             console.warn("API not ready, waiting...");
             const ready = await waitForAPI(7000);
             if (!ready) throw new Error("ZOHO API never became ready");
           }
 
-          const response = await ZOHO.CREATOR.API.getRecordCount({
-            appName: "echo",
-            reportName: cfg.report,
+          const response = await ZOHO.CREATOR.DATA.getRecordCount({
+            app_name: "echo",
+            report_name: cfg.report,
             criteria: cfg.criteria
           });
           return response.count ?? response.result?.records_count ?? 0;
