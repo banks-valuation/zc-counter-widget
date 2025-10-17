@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Count Dashboard Widget</title>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .count-box {
+      display: inline-block; margin: 8px; padding: 10px 16px;
+      border-radius: 10px; background: #f2f2f2; min-width: 100px;
+    }
+    .label { font-size: 14px; color: #555; }
+    .value { font-size: 22px; font-weight: bold; color: #003366; }
+  </style>
+</head>
+<body>
+  <h3>Widget Version: <span id="widgetVersion"></span></h3>
+
+  <!-- boxes will be inserted dynamically -->
+  <div id="countsContainer"></div>
+
+  <script>
+    const widgetConfig = [
+      { id: "draft", label: "Draft", report: "Orders_Report", criteria: '(Status="Draft")' },
+      { id: "new", label: "New", report: "Orders_Report", criteria: '(Status="New")' },
+      { id: "offered", label: "Offered", report: "Orders_Report", criteria: '(Status="Offered")' },
+      { id: "accepted", label: "Accepted", report: "Orders_Report", criteria: '(Status="Accepted")' },
+      { id: "declined", label: "Declined", report: "Orders_Report", criteria: '(Status="Declined")' }
+    ];
+
+    // --- DOM setup ---
+    const container = $("#countsContainer");
+    widgetConfig.forEach(cfg => {
+      container.append(`
+        <div class="count-box">
+          <div class="label">${cfg.label}</div>
+          <div class="value" id="${cfg.id}">--</div>
+        </div>
+      `);
+    });
+    document.getElementById("widgetVersion").textContent =
+      new Date(document.lastModified).toLocaleString();
+
+    // --- safe init helper ---
+    async function safeInit() {
+      try {
+        await ZOHO.CREATOR.init();
+        return true;
+      } catch (err) {
+        console.warn("Init failed, retrying in 3 s…", err);
+        await new Promise(r => setTimeout(r, 3000));
+        return safeInit();
+      }
+    }
+
+    // --- main count fetcher ---
+    async function updateAllCounts() {
+      try {
+        for (const cfg of widgetConfig) {
+          const response = await ZOHO.CREATOR.API.getRecordCount({
+            appName: "echo",
+            reportName: cfg.report,
+            criteria: cfg.criteria
+          });
+          const count = response.count ?? response.result?.records_count ?? 0;
+          $("#" + cfg.id).text(count);
+        }
+      } catch (err) {
+        console.error("Count fetch error:", err);
+        if (String(err).includes("Invalid Ticket Id") || String(err).includes("SESSION")) {
+          await safeInit();
+        }
+      }
+    }
+
+    // --- boot sequence ---
+    (async () => {
+      await safeInit();
+      await updateAllCounts();
+      setInterval(updateAllCounts, 5000);
+    })();
+  </script>
+</body>
+</html>
