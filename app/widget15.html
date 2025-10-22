@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Count Dashboard Widget</title>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .count-box {
+      display: inline-block; margin: 8px; padding: 10px 16px;
+      border-radius: 10px; background: #f2f2f2; min-width: 100px;
+    }
+    .label { font-size: 14px; color: #555; }
+    .value { font-size: 22px; font-weight: bold; color: #003366; }
+  </style>
+</head>
+<body>
+  <h3>Widget Version: <span id="widgetVersion"></span></h3>
+  <div id="countsContainer"></div>
+
+  <script>
+    const currentTime = new Date().toISOString().slice(0, 19).replace("T", " "); 
+
+    const base = new Date(); // current moment
+    const todayDate = new Date(base); // clone
+    const yesterdayDate = new Date(base);
+    const tomorrowDate = new Date(base);
+    const twoDaysFromTodayDate = new Date(base);
+
+    yesterdayDate.setDate(base.getDate() - 1);
+    todayDate.setDate(base.getDate());
+    tomorrowDate.setDate(base.getDate() + 1);
+    twoDaysFromTodayDate.setDate(base.getDate() + 2);
+
+    const yesterday = yesterdayDate.toISOString().slice(0, 10);
+    const today = todayDate.toISOString().slice(0, 10);
+    const tomorrow = tomorrowDate.toISOString().slice(0, 10);
+    const twoDaysFromToday = twoDaysFromTodayDate.toISOString().slice(0, 10);
+
+
+
+
+    // --- Utility function to format datetime ---
+    function toZohoDateTimeString(date) {
+      const pad = (n) => (n < 10 ? "0" + n : n);
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    // --- Wait helper ---
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    // --- Safe getRecordCount with retries ---
+    async function safeGetRecordCount(reportName, criteria, retries = 3, delay = 1500) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await ZOHO.CREATOR.DATA.getRecordCount({
+            report_name: reportName,
+            criteria: criteria
+          });
+          return response.count ?? response.result?.records_count ?? 0;
+        } catch (err) {
+          console.warn(`Attempt ${i + 1} failed for ${reportName}`, err);
+          await wait(delay);
+        }
+      }
+      return "--";
+    }
+
+    // --- Fetch dynamic config from your Zoho API ---
+    async function fetchDashboardConfig() {
+      const url = "https://www.zohoapis.com/creator/custom/banksvaluation/getDashboardConfig?dashboardName=Intake_and_Assignment_Dashboard&publickey=MaF7uhAWE5r1ZZm3DSA9tGN7V";
+      try {
+        const resp = await fetch(url);
+        const json = await resp.json();
+        return json.data || json; // supports both wrapped and direct responses
+      } catch (err) {
+        console.error("Failed to fetch dashboard config:", err);
+        return [];
+      }
+    }
+
+    // --- Update all counters on parent page ---
+    async function updateAllCounts(config) {
+      const now = toZohoDateTimeString(new Date());
+      for (const cfg of config) {
+        // Replace date placeholders in criteria (if any)
+        let criteria = cfg.criteria || "";
+        criteria = criteria.replace(/\$\{currentTime\}/g, now)
+                           .replace(/\$\{today\}/g, now.slice(0, 10));
+
+        const count = await safeGetRecordCount(cfg.report, criteria);
+        try {
+          const el = parent.document.getElementById(cfg.id);
+          if (el) el.textContent = count;
+          else console.warn(`Element not found for ID: ${cfg.id}`);
+        } catch (err) {
+          console.error("Unable to access parent document:", err);
+        }
+      }
+    }
+
+
+    // --- Init sequence ---
+    (async () => {
+      console.log("Initializing Zoho Creator Widget...");
+      const initOk = await safeInit();
+      if (!initOk) return;
+
+      console.log("Waiting for API readiness...");
+      const apiReady = await waitForAPI();
+      if (!apiReady) return;
+
+      console.log("Fetching dashboard configuration...");
+      const config = await fetchDashboardConfig();
+      if (!Array.isArray(config) || config.length === 0) {
+        console.error("No valid widget configuration found.");
+        return;
+      }
+
+      console.log("Starting count updates...");
+      await updateAllCounts(config);
+      setInterval(() => updateAllCounts(config), 5000); 
+    })();
+
+  </script>
+</body>
+</html>
