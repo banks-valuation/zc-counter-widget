@@ -30,7 +30,9 @@
     async function safeInit(retries = 5, delay = 3000) {
       for (let i = 0; i < retries; i++) {
         try {
-          await ZOHO.CREATOR.UTIL.getInitParams();
+          await ZOHO.CREATOR.UTIL.getInitParams().then(function(initParams) {
+            console.log("Init Params:", initParams);
+          });
           console.log("ZOHO SDK initialized successfully.");
           return true;
         } catch (err) {
@@ -83,15 +85,24 @@
 
     // --- Fetch dynamic config from your Zoho API ---
     async function fetchDashboardConfig() {
-      const url = "https://www.zohoapis.com/creator/custom/banksvaluation/getDashboardConfig?dashboardName=Intake_and_Assignment_Dashboard&publickey=MaF7uhAWE5r1ZZm3DSA9tGN7V";
-      try {
-        const resp = await fetch(url);
-        const json = await resp.json();
-        return json.data || json; // supports both wrapped and direct responses
-      } catch (err) {
-        console.error("Failed to fetch dashboard config:", err);
-        return [];
-      }
+      // const url = "https://www.zohoapis.com/creator/custom/banksvaluation/getDashboardConfig?dashboardName=Intake_and_Assignment_Dashboard&publickey=MaF7uhAWE5r1ZZm3DSA9tGN7V";
+      // try {
+      //   const resp = await fetch(url);
+      //   const json = await resp.json();
+      //   return json.data || json; // supports both wrapped and direct responses
+      // } catch (err) {
+      //   console.error("Failed to fetch dashboard config:", err);
+      //   return [];
+      // }
+      const config = await ZOHO.CREATOR.DATA.invokeCustomApi({
+        api_name: "getDashboardConfig",    // your custom API’s link name
+        http_method: "GET",
+        query_params: {
+          dashboardName: "Intake_and_Assignment_Dashboard",
+          publickey: "MaF7uhAWE5r1ZZm3DSA9tGN7V"
+        }
+      });
+      return config.data || config;
     }
 
     // --- Update all counters on parent page ---
