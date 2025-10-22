@@ -90,7 +90,7 @@
 
     // --- Fetch dynamic config from your Zoho API ---
     async function fetchDashboardConfig() {
-      const config = {
+      const customApiConfig = {
         api_name: "getDashboardConfig",
         content_type: "application/json",
         http_method: "GET",
@@ -99,11 +99,22 @@
       };
 
       try {
-        const respConfig = await ZOHO.CREATOR.DATA.invokeCustomApi(config);
-        console.log("Dashboard Config:", respConfig);
+        const dashConfigResp = await ZOHO.CREATOR.DATA.invokeCustomApi(customApiConfig);
+        console.log("Dashboard Config:", dashConfigResp);
+        const result = dashConfigResp?.data?.result || dashConfigResp?.result;
+        if (!result || result.length === 0) {
+            console.error("No valid widget configuration found.");
+            return [];
+        }        
+        // Flatten all counterLists into one array for easy iteration
+        const widgetConfig = result
+            .map(section => section.counterList)
+            .flat()
+            .filter(counter => counter.id && counter.label); // only include valid counters
 
-        // The response data is usually in respConfig.data
-        return respConfig.data || respConfig;
+        console.log("Dashboard Config loaded:", widgetConfig);
+        return widgetConfig;
+        
       } catch (err) {
         console.error("Failed to fetch dashboard config:", err);
         return null;
@@ -142,15 +153,12 @@
       if (!apiReady) return;
 
       console.log("Fetching dashboard configuration...");
-      const config = await fetchDashboardConfig();
-      if (!Array.isArray(config) || config.length === 0) {
-        console.error("No valid widget configuration found.");
-        return;
-      }
+      const widgetConfig = await fetchDashboardConfig();
+      console.log("Widget Configuration:", widgetConfig);
 
       console.log("Starting count updates...");
-      await updateAllCounts(config);
-      setInterval(() => updateAllCounts(config), 5000); 
+      await updateAllCounts(widgetConfig);
+      setInterval(() => updateAllCounts(widgetConfig), 5000);
     })();
 
   </script>
