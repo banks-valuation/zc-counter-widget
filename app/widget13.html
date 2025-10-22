@@ -22,14 +22,57 @@
   <script>
     const currentTime = new Date().toISOString().slice(0, 19).replace("T", " "); 
 
-    const widgetConfig = [
-      { id: "draft", label: "Draft", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-0.0-ENTRY")` },
-      { id: "draft_late", label: "Draft Late", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-0.0-ENTRY" && Response_Required_By_Date < "${currentTime}")`},
-      { id: "new", label: "New", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-1.0-NEW")` },
-      { id: "offered", label: "Offered", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-1.5-OFFEREDTOAPPRAISER")` },
-      { id: "accepted", label: "Accepted", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-2.0-ACCEPTED")` },
-      { id: "declined", label: "Declined", report: "Order_Offers", criteria: `(Status.Status_Code=="OO-2.5-REJECTED")` }
-    ];
+    const base = new Date(); // current moment
+    const todayDate = new Date(base); // clone
+    const yesterdayDate = new Date(base);
+    const tomorrowDate = new Date(base);
+    const twoDaysFromTodayDate = new Date(base);
+
+    yesterdayDate.setDate(base.getDate() - 1);
+    todayDate.setDate(base.getDate());
+    tomorrowDate.setDate(base.getDate() + 1);
+    twoDaysFromTodayDate.setDate(base.getDate() + 2);
+
+    const yesterday = yesterdayDate.toISOString().slice(0, 10);
+    const today = todayDate.toISOString().slice(0, 10);
+    const tomorrow = tomorrowDate.toISOString().slice(0, 10);
+    const twoDaysFromToday = twoDaysFromTodayDate.toISOString().slice(0, 10);
+
+
+    // to get the configuration, call this API endpoint: https://www.zohoapis.com/creator/custom/banksvaluation/getDashboardConfig
+    const configResp = await fetch("https://www.zohoapis.com/creator/custom/banksvaluation/getDashboardConfig?dashboardName=Intake_and_Assignment_Dashboard&publickey=MaF7uhAWE5r1ZZm3DSA9tGN7V");
+    const config = await configResp.json();
+
+    // Flatten out the nested structure into widgetConfig
+    const widgetConfig = [];
+
+    if (config?.result?.length) {
+      config.result.forEach(section => {
+        if (Array.isArray(section.counterList)) {
+          section.counterList.forEach(counter => {
+            if (counter?.count && counter?.id && counter?.label) {
+              // Replace placeholders like ${today} with actual values
+              const criteria = counter.count
+                .replaceAll("${today}", today)
+                .replaceAll("${tomorrow}", tomorrow)
+                .replaceAll("${twoDaysFromToday}", twoDaysFromToday)
+                .replaceAll("${currentTime}", currentTime)
+                .replaceAll("`", ""); // remove backticks
+
+              const report = (counter.report || "").replaceAll('"', "").replaceAll("+", "").trim();
+
+              widgetConfig.push({
+                id: counter.id.replace(/\s+/g, "_"), // sanitize id for DOM
+                label: counter.label,
+                report: report || "Unknown_Report",
+                criteria
+              });
+            }
+          });
+        }
+      });
+    }
+
 
     // --- DOM setup ---
     const container = $("#countsContainer");
@@ -37,7 +80,7 @@
       container.append(`
         <div class="count-box">
           <div class="label">${cfg.label}</div>
-          <div class="value" id="${cfg.id}">--</div>
+          <div class="value" id="${cfg.id}"><a href="#Report:${cfg.report}" target="report">--</a></div>
         </div>
       `);
     });
