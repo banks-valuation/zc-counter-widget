@@ -25,6 +25,8 @@
     const tomorrow = tomorrowDate.toISOString().slice(0, 10);
     const twoDaysFromToday = twoDaysFromTodayDate.toISOString().slice(0, 10);
 
+    let creatorScope = "";
+    let creatorAppLinkName = "";    
 
     // --- Safe SDK init ---
     async function safeInit(retries = 5, delay = 3000) {
@@ -32,6 +34,9 @@
         try {
           await ZOHO.CREATOR.UTIL.getInitParams().then(function(initParams) {
             console.log("Init Params:", initParams);
+          // save values for later
+          creatorScope = initParams.scope;
+          creatorAppLinkName = initParams.appLinkName;            
           });
           console.log("ZOHO SDK initialized successfully.");
           return true;
@@ -95,11 +100,11 @@
       //   return [];
       // }
       const config = await ZOHO.CREATOR.DATA.invokeCustomApi({
-        api_name: "getDashboardConfig",    // your custom API’s link name
+        api_name: "getDashboardConfig",
         http_method: "GET",
+        public_key: "MaF7uhAWE5r1ZZm3DSA9tGN7V",
         query_params: {
           dashboardName: "Intake_and_Assignment_Dashboard",
-          publickey: "MaF7uhAWE5r1ZZm3DSA9tGN7V"
         }
       });
       return config.data || config;
