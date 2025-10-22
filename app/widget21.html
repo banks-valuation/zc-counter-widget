@@ -92,11 +92,10 @@
     async function fetchDashboardConfig() {
       const config = {
         api_name: "getDashboardConfig",
+        content_type: "application/json",
         http_method: "GET",
         publickey: "MaF7uhAWE5r1ZZm3DSA9tGN7V", 
-        query_params: {
-          dashboardName: "Intake_and_Assignment_Dashboard",
-        }
+        query_params: "dashboardName=Intake_and_Assignment_Dashboard"
       };
 
       try {
