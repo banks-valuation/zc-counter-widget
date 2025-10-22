@@ -99,15 +99,29 @@
       //   console.error("Failed to fetch dashboard config:", err);
       //   return [];
       // }
-      const config = await ZOHO.CREATOR.DATA.invokeCustomApi({
+      // const config = await ZOHO.CREATOR.DATA.invokeCustomApi({
+      //   api_name: "getDashboardConfig",
+      //   http_method: "GET",
+      //   public_key: "MaF7uhAWE5r1ZZm3DSA9tGN7V",
+      //   query_params: {
+      //     dashboardName: "Intake_and_Assignment_Dashboard",
+      //   }
+      // });
+      // return config.data || config;
+
+      const config = {
         api_name: "getDashboardConfig",
         http_method: "GET",
         public_key: "MaF7uhAWE5r1ZZm3DSA9tGN7V",
         query_params: {
           dashboardName: "Intake_and_Assignment_Dashboard",
         }
+      };
+
+      const respConfig = await ZOHO.CREATOR.DATA.invokeCustomApi(config).then(function (response) {
+        console.log(response);
       });
-      return config.data || config;
+      return respConfig.data || respConfig;
     }
 
     // --- Update all counters on parent page ---
@@ -133,7 +147,7 @@
 
     // --- Init sequence ---
     (async () => {
-      console.log("Initializing Zoho Creator Widget...");
+      console.log("Initializing Zoho Creator Widget.  Version: " + new Date(document.lastModified).toLocaleString());
       const initOk = await safeInit();
       if (!initOk) return;
 
