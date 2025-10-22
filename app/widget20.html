@@ -90,38 +90,25 @@
 
     // --- Fetch dynamic config from your Zoho API ---
     async function fetchDashboardConfig() {
-      // const url = "https://www.zohoapis.com/creator/custom/banksvaluation/getDashboardConfig?dashboardName=Intake_and_Assignment_Dashboard&publickey=MaF7uhAWE5r1ZZm3DSA9tGN7V";
-      // try {
-      //   const resp = await fetch(url);
-      //   const json = await resp.json();
-      //   return json.data || json; // supports both wrapped and direct responses
-      // } catch (err) {
-      //   console.error("Failed to fetch dashboard config:", err);
-      //   return [];
-      // }
-      // const config = await ZOHO.CREATOR.DATA.invokeCustomApi({
-      //   api_name: "getDashboardConfig",
-      //   http_method: "GET",
-      //   public_key: "MaF7uhAWE5r1ZZm3DSA9tGN7V",
-      //   query_params: {
-      //     dashboardName: "Intake_and_Assignment_Dashboard",
-      //   }
-      // });
-      // return config.data || config;
-
       const config = {
         api_name: "getDashboardConfig",
         http_method: "GET",
-        public_key: "MaF7uhAWE5r1ZZm3DSA9tGN7V",
+        publickey: "MaF7uhAWE5r1ZZm3DSA9tGN7V", 
         query_params: {
           dashboardName: "Intake_and_Assignment_Dashboard",
         }
       };
 
-      const respConfig = await ZOHO.CREATOR.DATA.invokeCustomApi(config).then(function (response) {
-        console.log(response);
-      });
-      return respConfig.data || respConfig;
+      try {
+        const respConfig = await ZOHO.CREATOR.DATA.invokeCustomApi(config);
+        console.log("Dashboard Config:", respConfig);
+
+        // The response data is usually in respConfig.data
+        return respConfig.data || respConfig;
+      } catch (err) {
+        console.error("Failed to fetch dashboard config:", err);
+        return null;
+      }
     }
 
     // --- Update all counters on parent page ---
