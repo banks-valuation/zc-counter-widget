@@ -79,6 +79,7 @@
             report_name: reportName,
             criteria: criteria
           });
+          console.log(`Count for ${reportName} with criteria "${criteria}":`, response);
           return response.count ?? response.result?.records_count ?? 0;
         } catch (err) {
           console.warn(`Attempt ${i + 1} failed for ${reportName}`, err);
@@ -126,7 +127,7 @@
       const now = toZohoDateTimeString(new Date());
       for (const cfg of config) {
         // Replace date placeholders in criteria (if any)
-        let criteria = cfg.criteria || "";
+        let criteria = cfg.countFilter || "";
         criteria = criteria.replace(/\$\{currentTime\}/g, now)
                            .replace(/\$\{today\}/g, now.slice(0, 10));
 
